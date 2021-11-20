@@ -1,0 +1,97 @@
+/////////////////////////////////////////////////////
+set serveroutput on;
+declare
+cursor c is
+select * from book b left join author on authorid=author_id left join publisher p on b.publisherid=p.publisherid
+order by title asc;
+begin
+dbms_output.put_line('BOOKID'||'.............'||'TITLE'||'.............'||'publisher'||'.............'||'Author');
+for i in c 
+loop
+dbms_output.put_line(i.bookid||'...........'||substr(i.title,1,10)||'...........'||i.publishername||'...........'||concat(i.firstname||' ',i.lastname));end loop;
+end;
+/
+
+/////////////////////////////////////////////////////////////////////////
+
+set serveroutput on;
+declare
+DEPTID emp.DEPT_ID%type:=60;
+DEPTNAME dept.DEPT_NAME%type;
+DEPTHEAD dept.DEPT_HEAD%type;
+begin
+select DEPT_ID,DEPT_NAME,DEPT_HEAD into DEPTID,DEPTNAME,DEPTHEAD from dept where DEPT_ID=DEPTID;DBMS_OUTPUT.PUT_LINE (DEPTID || DEPTNAME || DEPTHEAD);Exception
+WHEN NO_DATA_FOUND
+ THEN
+ dbms_output.put_line('Dept ID :'||DEPTID||' is not a valid ID');
+end;
+/
+
+
+
+///////////////////////////////////////////////
+    set serveroutput on
+    
+    declare
+    l_publisherid publisher.publisherid%type;
+    begin
+    
+        insert into publisher values (123, 'TTK Publisher')
+        returning publisherid into l_publisherid;
+           
+        update book b set b.publisherid=l_publisherid
+        where b.publisherid is null;
+    
+      declare
+    
+      cursor c is
+    
+        select * from book b
+    left join author on authorid=author_id
+    left join publisher p on b.publisherid=p.publisherid
+    where p.publisherid=l_publisherid;
+    
+    
+     begin
+        dbms_output.put_line('BOOKID'||'.............'||'TITLE'||'.............'||'publisher'||'.............'||'Author');
+    
+      for i in c loop
+       dbms_output.put_line(i.bookid||'...........'||substr(i.title,1,10)||'...........'||i.publishername||'...........'||concat(i.firstname||' ',i.lastname));
+        end loop;
+        END;
+END;
+/
+
+
+//////////////////////////////////////////////////////////////
+
+set serveroutput on
+declare
+  l_dept_name  dept.dept_name%type;
+begin
+  -- loop through all distinct DEPT_ID values in the EMP table
+  for cur_r in (select distinct e.dept_id 
+                from emp e
+               )
+  loop
+    -- starting inner BEGIN-EXCEPTION-END block so that 
+    -- loop goes on in case of an error
+    begin
+      -- retrieve department details
+      select d.dept_name
+        into l_dept_name
+        from dept d
+        where d.dept_id = cur_r.dept_id;
+
+      -- display department info (because SELECT returned something for CUR_R.DEPT_ID)
+      dbms_output.put_line('Dept ID :' || cur_r.dept_id || ' is ' || l_dept_name);
+    
+    -- handle errors (because SELECT didn't return anything for CUR_R.DEPT_ID)
+    exception
+      when no_data_found then
+        dbms_output.put_line('Dept ID :' || cur_r.dept_id ||' is not a valid ID');
+    end;
+  end loop;
+end;
+/
+//////////////////////////////////////////////////////////////////////////////
